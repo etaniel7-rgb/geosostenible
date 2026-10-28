@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Propuestas de Sostenibilidad - INACAP Calama</title>
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+overflow:hidden;
+background:#f5f5f5;
+}
+
+/*========================
+ CABECERA
+========================*/
+
+header{
+
+height:65px;
+
+background:white;
+
+border-bottom:1px solid #ddd;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:0 20px;
+
+z-index:1000;
+
+position:relative;
+
+}
+
+.header-left{
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
+
+}
+
+.logo{
+
+height:65px;
+
+}
+
+.header-text h3{
+
+font-size:18px;
+
+color:#222;
+
+}
+
+.header-text p{
+
+font-size:13px;
+
+color:#666;
+
+}
+
+.header-right{
+
+display:flex;
+
+align-items:center;
+
+gap:10px;
+
+}
+
+#contador{
+
+background:#C8102E;
+
+color:white;
+
+padding:10px 15px;
+
+border-radius:20px;
+
+font-weight:bold;
+
+}
+
+/*========================
+ MENU
+========================*/
+
+#menuBtn{
+
+width:45px;
+
+height:45px;
+
+font-size:22px;
+
+border:none;
+
+background:#f3f3f3;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+#menuPanel{
+
+position:absolute;
+
+top:100px;
+
+right:15px;
+
+width:250px;
+
+background:white;
+
+padding:10px;
+
+border-radius:12px;
+
+box-shadow:0 5px 20px rgba(0,0,0,.2);
+
+display:none;
+
+z-index:9999;
+
+}
+
+#menuPanel button{
+
+width:100%;
+
+padding:10px;
+
+margin-bottom:6px;
+
+border:none;
+
+background:#f5f5f5;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+/*========================
+ PANEL PROPUESTAS
+========================*/
+
+#panelPropuestas{
+position:absolute;
+top:110px;
+left:50%;
+transform:translateX(-50%);
+width:950px;
+max-height:70vh;
+overflow:auto;
+background:white;
+padding:15px;
+border-radius:12px;
+display:none;
+box-shadow:0 5px 20px rgba(0,0,0,.25);
+z-index:9999;
+}
+
+#modalPropuesta{
+
+position:fixed;
+
+top:50%;
+left:50%;
+
+transform:translate(-50%,-50%);
+
+width:650px;
+
+max-width:90%;
+
+background:white;
+
+padding:20px;
+
+border-radius:12px;
+
+box-shadow:0 5px 25px rgba(0,0,0,.3);
+
+display:none;
+
+z-index:99999;
+
+}
+
+
+.tarjetaPropuesta{
+
+padding:10px;
+
+border-bottom:1px solid #ddd;
+
+margin-bottom:10px;
+
+}
+
+.tarjetaPropuesta button{
+
+padding:8px;
+
+margin-top:5px;
+
+margin-right:5px;
+
+border:none;
+
+border-radius:8px;
+
+background:#f3f3f3;
+
+cursor:pointer;
+
+}
+
+/*========================
+ MAPA
+========================*/
+
+#map{
+height:calc(100vh - 65px);
+width:100%;
+}
+
+/*========================
+ FORMULARIO
+========================*/
+
+.formulario{
+
+width:260px;
+
+display:flex;
+
+flex-direction:column;
+
+gap:8px;
+
+}
+
+.formulario input,
+.formulario select,
+.formulario textarea{
+
+padding:10px;
+
+border:1px solid #ddd;
+
+border-radius:8px;
+
+}
+
+.formulario button{
+
+background:#C8102E;
+
+color:white;
+
+border:none;
+
+padding:10px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+#togglePanel{
+
+position:absolute;
+
+top:50%;
+
+right:15px;
+
+transform:translateY(-50%);
+
+width:40px;
+
+height:40px;
+
+background:white;
+
+border-radius:50%;
+
+display:none;
+
+align-items:center;
+
+justify-content:center;
+
+cursor:pointer;
+
+box-shadow:0 2px 10px rgba(0,0,0,.25);
+
+font-size:22px;
+
+font-weight:bold;
+
+z-index:99999;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="header-left">
+
+<img
+src="logo-inacap.png"
+class="logo"
+>
+
+<div class="header-text">
+
+<h3>
+Propuestas de Sostenibilidad
+</h3>
+
+<p>
+Región de Antofagasta
+</p>
+
+</div>
+
+</div>
+
+<div class="header-right">
+
+<button id="menuBtn">
+☰
+</button>
+
+<div id="contador">
+0 Propuestas
+</div>
+
+</div>
+
+</header>
+
+<div id="menuPanel">
+
+<button onclick="mostrarPropuestas()">
+📋 Ver Propuestas
+</button>
+
+<button onclick="pantallaCompleta()">
+⛶ Pantalla Completa
+</button>
+
+<button onclick="irAntofagasta()">
+📍 Antofagasta
+</button>
+
+<button onclick="irCalama()">
+📍 Calama
+</button>
+
+<button onclick="irSanPedro()">
+📍 San Pedro
+</button>
+
+<button onclick="buscarCiudad()">
+🔍 Buscar Ciudad
+</button>
+
+<button onclick="activarAdmin()">
+🔒 Modo Administrador
+</button>
+
+<button onclick="cerrarAdmin()">
+🚪 Cerrar Administrador
+</button>
+
+</div>
+
+<div id="panelPropuestas"></div>
+<div id="modalPropuesta"></div>
+
+<div id="map"></div>
+<div id="togglePanel">
+▶
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+//===================
+// MAPA
+//===================
+
+const map = L.map('map').setView(
+[-23.65,-70.40],
+8
+);
+
+//===================
+// CAPA SATELITAL
+//===================
+
+const satelite = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+{
+attribution:'Esri Satellite'
+}
+);
+
+//===================
+// CAPA CALLES
+//===================
+
+
+
+//===================
+// CAPA RUTAS Y NOMBRES
+//===================
+
+const etiquetas = L.tileLayer(
+'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+{
+opacity:0.9
+}
+);
+
+const lugares = L.tileLayer(
+'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+{
+opacity:1
+}
+);
+
+//===================
+// SATELITE POR DEFECTO
+//===================
+
+satelite.addTo(map);
+etiquetas.addTo(map);
+lugares.addTo(map);
+
+//===================
+// CONTROL DE CAPAS
+//===================
+
+L.control.layers(
+{
+"🛰️ Satélite": satelite
+},
+{
+"📍 Nombres y lugares": etiquetas
+}
+).addTo(map);
+
+//===================
+// CIUDADES
+//===================
+
+const ciudades = [
+
+
+  // --- PROVINCIA DE EL LOA ---
+  ["Calama", -22.4567, -68.9237],
+  ["San Pedro de Atacama", -22.9087, -68.1997],
+  ["Ollagüe", -21.2223, -68.2528],
+  ["Chiu Chiu", -22.3422, -68.6508],
+  ["Lasana", -22.3022, -68.6256],
+  ["Ayquina", -22.2801, -68.3242],
+  ["Toconao", -23.1899, -68.0069],
+  ["Socaire", -23.5857, -67.8860],
+  ["Peine", -23.6806, -68.0645],
+  ["Caspana", -22.3503, -68.2257],
+  ["Toconce", -22.2618, -68.1818],
+  ["Machuca", -22.5936, -68.0631],
+  ["Talabre", -23.3180, -67.8920],
+  ["Camar", -23.4140, -67.9620],
+  ["Rio Grande", -22.6467, -68.1678],
+  ["Catarpe", -22.8801, -68.2092],
+
+  // --- PROVINCIA DE ANTOFAGASTA ---
+  ["Antofagasta", -23.6509, -70.3975],
+  ["Mejillones", -23.0964, -70.4483],
+  ["Taltal", -25.4084, -70.4835],
+  ["Sierra Gorda", -22.8973, -69.3174],
+  ["Baquedano", -23.3323, -69.8385],
+  ["Hornitos", -22.9082, -70.2828],
+  ["Paposo", -25.0101, -70.4632],
+  ["Cifuncho", -25.5658, -70.6433],
+  ["Michilla", -22.7163, -70.2647],
+
+  // --- PROVINCIA DE TOCOPILLA ---
+  ["Tocopilla", -22.0894, -70.1979],
+  ["María Elena", -22.3507, -69.6681],
+  ["Quillagua", -21.6582, -69.5350],
+  ["Campamento Pedro de Valdivia", -22.6000, -69.6667],
+  ["Cobija", -22.5482, -70.2541],
+  ["Punta Gorda", -21.9058, -70.1788],
+  
+];
+
+ciudades.forEach(c=>{
+
+L.circleMarker(
+[c[1],c[2]],
+{
+radius:6,
+color:"#C8102E",
+fillColor:"#C8102E",
+fillOpacity:1
+}
+)
+.addTo(map)
+.bindTooltip(
+c[0],
+{
+permanent:true
+}
+);
+
+});
+
+//===================
+// ADMIN
+//===================
+
+let admin =
+localStorage.getItem("admin")
+=== "true";
+
+//===================
+// PROPUESTAS
+//===================
+
+let propuestas =
+JSON.parse(
+localStorage.getItem("propuestas")
+) || [];
+
+actualizarContador();
+
+propuestas.forEach(
+crearMarcador
+);
+
+//===================
+// MENU
+//===================
+
+const menuBtn =
+document.getElementById("menuBtn");
+
+const menuPanel =
+document.getElementById("menuPanel");
+
+menuBtn.onclick = ()=>{
+
+menuPanel.style.display =
+menuPanel.style.display==="block"
+?
+"none"
+:
+"block";
+
+};
+
+//===================
+// FORMULARIO
+//===================
+
+map.on('click',(e)=>{
+
+L.popup()
+.setLatLng(e.latlng)
+.setContent(`
+
+<div class="formulario">
+
+    <select id="tipoParticipante">
+
+<option>🎓 Estudiante INACAP</option>
+
+<option>👨‍🏫 Docente INACAP</option>
+
+<option>🏢 Empresa</option>
+
+<option>👥 Comunidad</option>
+
+<option>🏛️ Organismo Público</option>
+
+</select>
+
+<input
+id="institucion"
+placeholder="Empresa (opcional)">
+
+<select id="localidad">
+
+<option>Antofagasta</option>
+<option>Calama</option>
+<option>San Pedro de Atacama</option>
+<option>Tocopilla</option>
+<option>Mejillones</option>
+<option>Taltal</option>
+<option>Ollagüe</option>
+<option>Sierra Gorda</option>
+<option>María Elena</option>
+<option>Baquedano</option>
+<option>Chiu Chiu</option>
+<option>Lasana</option>
+<option>Caspana</option>
+<option>Toconao</option>
+<option>Socaire</option>
+<option>Peine</option>
+<option>Quillagua</option>
+
+</select>
+
+<input
+id="nombre"
+placeholder="Nombre completo">
+
+<input
+id="correo"
+placeholder="Correo">
+
+<input
+id="titulo"
+placeholder="Nombre propuesta">
+
+<select id="categoria">
+
+<option>♻️ Economía Circular</option>
+
+<option>💧 Recursos Hídricos</option>
+
+<option>☀️ Energía</option>
+
+<option>🌱 Biodiversidad</option>
+
+<option>🤝 Impacto Social</option>
+
+<option>🏫 Educación Ambiental</option>
+
+<option>🏭 Innovación Industrial</option>
+
+<option>🚦 Movilidad Sostenible</option>
+
+<option>🌍 Acción Climática</option>
+
+</select>
+
+<input
+id="ods"
+readonly
+placeholder="ODS asociado"
+>
+
+<textarea
+id="descripcion"
+placeholder="Descripción">
+</textarea>
+
+<button
+onclick="
+guardarPropuesta(
+${e.latlng.lat},
+${e.latlng.lng}
+)
+">
+
+Guardar
+
+</button>
+
+</div>
+
+`)
+.openOn(map);
+
+setTimeout(()=>{
+
+const categoria =
+document.getElementById("categoria");
+
+const ods =
+document.getElementById("ods");
+
+function actualizarODS(){
+
+const valor =
+categoria.value;
+
+if(valor.includes("Economía")){
+
+ods.value =
+"ODS 12 - Producción y Consumo Responsables";
+
+}
+
+else if(valor.includes("Hídricos")){
+
+ods.value =
+"ODS 6 - Agua Limpia y Saneamiento";
+
+}
+
+else if(valor.includes("Energía")){
+
+ods.value =
+"ODS 7 - Energía Asequible y No Contaminante";
+
+}
+
+else if(valor.includes("Biodiversidad")){
+
+ods.value =
+"ODS 15 - Vida de Ecosistemas Terrestres";
+
+}
+
+else if(valor.includes("Impacto Social")){
+
+ods.value =
+"ODS 10 - Reducción de Desigualdades";
+
+}
+
+else if(valor.includes("Educación")){
+
+ods.value =
+"ODS 4 - Educación de Calidad";
+
+}
+
+else if(valor.includes("Industrial")){
+
+ods.value =
+"ODS 9 - Industria, Innovación e Infraestructura";
+
+}
+
+else if(valor.includes("Movilidad")){
+
+ods.value =
+"ODS 11 - Ciudades y Comunidades Sostenibles";
+
+}
+
+else if(valor.includes("Climática")){
+
+ods.value =
+"ODS 13 - Acción por el Clima";
+
+}
+
+}
+
+categoria.addEventListener(
+"change",
+actualizarODS
+);
+
+actualizarODS();
+
+},100);
+
+
+});
+
+//===================
+// GUARDAR
+//===================
+
+function guardarPropuesta(lat,lng){
+
+const propuesta = {
+
+id: Date.now(),
+
+ods:
+document.getElementById(
+"ods"
+).value,
+
+nombre:
+document.getElementById("nombre").value,
+
+tipo:
+document.getElementById(
+"tipoParticipante"
+).value,
+
+institucion:
+document.getElementById(
+"institucion"
+).value,
+
+localidad:
+document.getElementById(
+"localidad"
+).value,
+
+correo:
+document.getElementById("correo").value,
+
+titulo:
+document.getElementById("titulo").value,
+
+categoria:
+document.getElementById("categoria").value,
+
+descripcion:
+document.getElementById("descripcion").value,
+
+lat,
+lng,
+
+fecha:
+new Date().toLocaleDateString(),
+
+hora:
+new Date().toLocaleTimeString()
+
+};
+
+propuestas.push(propuesta);
+
+localStorage.setItem(
+"propuestas",
+JSON.stringify(propuestas)
+);
+
+crearMarcador(propuesta);
+
+actualizarContador();
+
+map.closePopup();
+
+}
+
+//===================
+// CREAR MARCADOR
+//===================
+
+function crearMarcador(p){
+
+const popup = `
+
+<h3>${p.titulo}</h3>
+
+<b>${p.categoria}</b>
+
+<br><br>
+
+🎯 ${p.ods}
+
+<br><br>
+
+<b>Participante:</b>
+
+${p.nombre}
+
+<br><br>
+
+${p.descripcion}
+
+<br><br>
+
+📧 ${p.correo}
+
+<br><br>
+
+📅 ${p.fecha}
+
+<br><br>
+
+📍 Lat:
+${p.lat.toFixed(4)}
+
+<br>
+
+📍 Lon:
+${p.lng.toFixed(4)}
+
+${
+admin ?
+
+`
+
+<br><br>
+
+<button
+onclick="
+eliminarPropuesta(${p.id})
+"
+style="
+background:#C8102E;
+color:white;
+border:none;
+padding:8px;
+border-radius:8px;
+cursor:pointer;
+">
+🗑 Eliminar
+</button>
+
+`
+
+:
+
+""
+
+}
+
+`;
+
+L.marker(
+[p.lat,p.lng]
+)
+.addTo(map)
+.bindPopup(popup);
+
+}
+
+//===================
+// ADMIN
+//===================
+
+function activarAdmin(){
+
+const clave =
+prompt(
+"Ingrese contraseña administrador"
+);
+
+if(
+clave === "inacap2026"
+){
+
+admin = true;
+
+localStorage.setItem(
+"admin",
+"true"
+);
+
+alert(
+"Modo administrador activado"
+);
+
+location.reload();
+
+}else{
+
+alert(
+"Contraseña incorrecta"
+);
+
+}
+
+}
+
+//===================
+// CERRAR ADMIN
+//===================
+
+function cerrarAdmin(){
+
+localStorage.removeItem(
+"admin"
+);
+
+location.reload();
+
+}
+
+//===================
+// ELIMINAR
+//===================
+
+function eliminarPropuesta(id){
+
+if(
+!confirm(
+"¿Eliminar esta propuesta?"
+)
+){
+return;
+}
+
+propuestas =
+propuestas.filter(
+p => p.id !== id
+);
+
+localStorage.setItem(
+"propuestas",
+JSON.stringify(propuestas)
+);
+
+location.reload();
+
+}
+
+//===================
+// LISTADO PROPUESTAS
+//===================
+
+function mostrarPropuestas(){
+
+const panel =
+document.getElementById(
+"panelPropuestas"
+);
+
+if(
+panel.style.display==="block"
+){
+
+panel.style.display="none";
+
+return;
+
+}
+
+panel.style.display="block";
+
+panel.innerHTML =
+"<h2>📋 Propuestas Registradas</h2><br>";
+
+panel.innerHTML = `
+
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+">
+
+<h2>
+📋 Propuestas Registradas
+</h2>
+
+<button
+onclick="
+document.getElementById(
+'panelPropuestas'
+).style.display='none'
+"
+style="
+border:none;
+background:#d9534f;
+color:white;
+padding:6px 10px;
+border-radius:6px;
+cursor:pointer;
+"
+>
+
+❌
+
+</button>
+
+</div>
+
+<hr>
+
+<div style="
+display:grid;
+grid-template-columns:
+50px
+300px
+120px
+120px
+220px
+100px;
+font-weight:bold;
+padding:10px;
+background:#f1f1f1;
+border-radius:8px;
+">
+
+<div>N°</div>
+
+<div>Propuesta</div>
+
+<div>Fecha</div>
+
+<div>Hora</div>
+
+<div>Categoría</div>
+
+<div>Acción</div>
+
+</div>
+
+`;
+
+propuestas.forEach(p=>{
+
+panel.innerHTML += `
+
+<div style="
+display:grid;
+grid-template-columns:
+50px
+300px
+120px
+120px
+220px
+100px;
+align-items:center;
+padding:10px;
+border-bottom:1px solid #ddd;
+">
+
+<div>
+${propuestas.indexOf(p)+1}
+</div>
+
+<div>
+${p.titulo}
+</div>
+
+<div>
+${p.fecha || "-"}
+</div>
+
+<div>
+${p.hora || "-"}
+</div>
+
+<div>
+${p.categoria}
+</div>
+
+<div>
+
+<button onclick="abrirPropuesta(${p.id})
+" style=" border:none; background:#C8102E; color:white; 
+padding:8px 12px; 
+border-radius:7px; 
+cursor:pointer; 
+font-weight:600;
+ " > 👁 Abrir
+  </button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+//===================
+// CONTADOR
+//===================
+function abrirPropuesta(id){
+
+const propuesta =
+propuestas.find(
+p => p.id === id
+);
+
+const modal =
+document.getElementById(
+"modalPropuesta"
+);
+
+modal.innerHTML = `
+
+<h2>
+
+${propuesta.titulo}
+
+</h2>
+
+<hr>
+
+<p><b>Tipo:</b> ${propuesta.tipo || "-"}</p>
+
+<p><b>Participante:</b> ${propuesta.nombre}</p>
+
+<p><b>Institución:</b> ${propuesta.institucion || "-"}</p>
+
+<p><b>Localidad:</b> ${propuesta.localidad || "-"}</p>
+
+<p><b>Categoría:</b> ${propuesta.categoria}</p>
+
+<p><b>ODS:</b> ${propuesta.ods}</p>
+
+<p><b>Fecha:</b> ${propuesta.fecha}</p>
+
+<p><b>Hora:</b> ${propuesta.hora}</p>
+
+<p>
+
+<b>Descripción:</b>
+
+<br><br>
+
+${propuesta.descripcion}
+
+</p>
+
+<button
+onclick="
+document.getElementById(
+'modalPropuesta'
+).style.display='none'
+"
+>
+
+❌ Cerrar
+
+</button>
+
+`;
+
+modal.style.display="block";
+
+}
+function actualizarContador(){
+
+document.getElementById(
+"contador"
+).innerHTML =
+
+"🌱 " +
+
+propuestas.length +
+
+" Propuestas";
+
+}
+
+//===================
+// NAVEGACIÓN
+//===================
+
+function irAntofagasta(){
+
+map.flyTo(
+[-23.6509,-70.3975],
+11
+);
+
+}
+
+function irCalama(){
+
+map.flyTo(
+[-22.4567,-68.9237],
+11
+);
+
+}
+
+function irSanPedro(){
+
+map.flyTo(
+[-22.9087,-68.1997],
+11
+);
+
+}
+//===================
+// NUEVAS CIUDADES
+//===================
+
+function irTocopilla(){
+
+map.flyTo(
+[-22.0894,-70.1979],
+11
+);
+
+}
+
+function irMejillones(){
+
+map.flyTo(
+[-23.0964,-70.4483],
+11
+);
+
+}
+
+function irTaltal(){
+
+map.flyTo(
+[-25.4084,-70.4835],
+11
+);
+
+}
+
+
+//===================
+// BUSCADOR SIMPLE
+//===================
+
+function buscarCiudad(){
+
+const ciudad =
+prompt(
+"Ingrese ciudad"
+);
+
+if(!ciudad) return;
+
+const encontrada =
+ciudades.find(
+
+c =>
+c[0]
+.toLowerCase()
+.includes(
+ciudad.toLowerCase()
+)
+
+);
+
+if(encontrada){
+
+map.flyTo(
+[
+encontrada[1],
+encontrada[2]
+],
+12
+);
+
+}else{
+
+alert(
+"Ciudad no encontrada"
+);
+
+}
+
+//BUSCAR CIUDAD//
+
+}
+function buscarCiudad(){
+
+const nombre =
+prompt(
+"Ingrese ciudad"
+);
+
+if(!nombre) return;
+
+const ciudad =
+ciudades.find(
+
+c =>
+c[0]
+.toLowerCase()
+.includes(
+nombre.toLowerCase()
+)
+
+);
+
+if(ciudad){
+
+map.flyTo(
+[
+ciudad[1],
+ciudad[2]
+],
+12
+);
+
+}else{
+
+alert(
+"Ciudad no encontrada"
+);
+
+}
+
+}
+//===================
+// FULLSCREEN
+//===================
+
+function pantallaCompleta(){
+
+const header =
+document.querySelector("header");
+
+const flecha =
+document.getElementById("togglePanel");
+
+const mapa =
+document.getElementById("map");
+
+if(!document.fullscreenElement){
+
+document.documentElement.requestFullscreen();
+
+header.style.display="none";
+
+mapa.style.height="100vh";
+
+flecha.style.display="flex";
+
+menuPanel.style.display="none";
+
+setTimeout(()=>{
+
+map.invalidateSize();
+
+},500);
+
+}
+else{
+
+document.exitFullscreen();
+
+header.style.display="flex";
+
+mapa.style.height="calc(100vh - 65px)";
+
+flecha.style.display="none";
+
+menuPanel.style.display="none";
+
+setTimeout(()=>{
+
+map.invalidateSize();
+
+},500);
+
+}
+
+}
+
+//ocultar panel//
+
+const togglePanel =
+document.getElementById(
+"togglePanel"
+);
+
+togglePanel.onclick = ()=>{
+
+if(
+menuPanel.style.display==="block"
+){
+
+menuPanel.style.display="none";
+
+togglePanel.innerHTML="▶";
+
+}else{
+
+menuPanel.style.display="block";
+
+togglePanel.innerHTML="◀";
+
+}
+
+};
+
+</script>
+
+</body>
+</html>
