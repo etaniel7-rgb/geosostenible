@@ -301,6 +301,80 @@ cursor:pointer;
 
 }
 
+.contenedorGeo{
+
+display:flex;
+
+gap:15px;
+
+align-items:flex-start;
+
+}
+
+#panelInspiracion{
+
+width:350px;
+
+background:white;
+
+padding:10px;
+
+border-radius:10px;
+
+border:1px solid #ddd;
+
+}
+
+#panelInspiracion h3{
+
+margin-bottom:10px;
+
+font-size:16px;
+
+text-align:center;
+
+}
+
+#fotoLocalidad{
+
+width:100%;
+
+height:180px;
+
+object-fit:cover;
+
+border-radius:8px;
+
+margin-bottom:10px;
+
+}
+
+#infoLocalidad{
+
+font-size:14px;
+
+line-height:1.6;
+
+min-height:100px;
+
+}
+
+.controlesFotos{
+
+display:flex;
+
+justify-content:space-between;
+
+margin-top:10px;
+
+}
+
+.controlesFotos button{
+
+padding:8px 12px;
+
+}
+
 #togglePanel{
 
 position:absolute;
@@ -533,7 +607,6 @@ const ciudades = [
   ["Tocopilla", -22.0894, -70.1979],
   ["María Elena", -22.3507, -69.6681],
   ["Quillagua", -21.6582, -69.5350],
-  ["Campamento Pedro de Valdivia", -22.6000, -69.6667],
   ["Cobija", -22.5482, -70.2541],
   ["Punta Gorda", -21.9058, -70.1788],
   
@@ -614,17 +687,18 @@ L.popup()
 .setLatLng(e.latlng)
 .setContent(`
 
+<div class="contenedorGeo">
 <div class="formulario">
 
     <select id="tipoParticipante">
 
 <option>🎓 Estudiante INACAP</option>
 
-<option>👨‍🏫 Docente INACAP</option>
+<option>👨‍🏫 Docente INACAP/Colaboradores</option>
 
 <option>🏢 Empresa</option>
 
-<option>👥 Comunidad</option>
+<option>👥 Comunidades</option>
 
 <option>🏛️ Organismo Público</option>
 
@@ -712,6 +786,41 @@ ${e.latlng.lng}
 Guardar
 
 </button>
+
+</div>
+
+<div id="panelInspiracion">
+
+    <h3>
+        🌱 Participa en la Sostenibilidad
+    </h3>
+
+    <img
+        id="fotoLocalidad"
+        src="img/localidades/calama/1.jpg"
+    >
+
+    <div id="infoLocalidad">
+
+        Selecciona una localidad para
+        conocer desafíos y oportunidades
+        asociadas a los ODS.
+
+    </div>
+
+    <div class="controlesFotos">
+
+        <button id="anteriorFoto">
+            ◀
+        </button>
+
+        <button id="siguienteFoto">
+            ▶
+        </button>
+
+    </div>
+
+</div>
 
 </div>
 
@@ -803,10 +912,77 @@ actualizarODS
 
 actualizarODS();
 
+setTimeout(()=>{
+
+const btnSig =
+document.getElementById(
+"siguienteFoto"
+);
+
+const btnAnt =
+document.getElementById(
+"anteriorFoto"
+);
+
+if(btnSig){
+
+btnSig.onclick = ()=>{
+
+cambiarFoto(1);
+
+};
+
+}
+
+if(btnAnt){
+
+btnAnt.onclick = ()=>{
+
+cambiarFoto(-1);
+
+};
+
+}
+
+},200);
+
 },100);
 
 
 });
+ 
+let fotoActual = 0;
+
+const fotosDemo = [
+
+"img/zonas/calama/1.jpg",
+"img/zonas/calama/2.jpg",
+"img/zonas/calama/3.jpg",
+"img/zonas/calama/4.jpg"
+
+];
+
+function cambiarFoto(direccion){
+
+fotoActual += direccion;
+
+if(fotoActual < 0){
+
+fotoActual = fotosDemo.length - 1;
+
+}
+
+if(fotoActual >= fotosDemo.length){
+
+fotoActual = 0;
+
+}
+
+document.getElementById(
+"fotoLocalidad"
+).src = fotosDemo[fotoActual];
+
+}
 
 //===================
 // GUARDAR
