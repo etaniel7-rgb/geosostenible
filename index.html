@@ -302,18 +302,15 @@ cursor:pointer;
 }
 
 .contenedorGeo{
-
 display:flex;
-
 gap:15px;
-
 align-items:flex-start;
-
+min-width:650px;
 }
 
 #panelInspiracion{
 
-width:350px;
+width:390px;
 
 background:white;
 
@@ -683,6 +680,25 @@ menuPanel.style.display==="block"
 
 map.on('click',(e)=>{
 
+    let ciudadMasCercana = ciudades[0];
+let distanciaMinima = Infinity;
+
+ciudades.forEach(c=>{
+
+    const distancia = Math.sqrt(
+        Math.pow(e.latlng.lat - c[1],2) +
+        Math.pow(e.latlng.lng - c[2],2)
+    );
+
+    if(distancia < distanciaMinima){
+
+        distanciaMinima = distancia;
+        ciudadMasCercana = c;
+
+    }
+
+});
+
 L.popup()
 .setLatLng(e.latlng)
 .setContent(`
@@ -698,7 +714,7 @@ L.popup()
 
 <option>🏢 Empresa</option>
 
-<option>👥 Comunidades</option>
+<option>👥 Comunidades de la region</option>
 
 <option>🏛️ Organismo Público</option>
 
@@ -713,20 +729,43 @@ placeholder="Empresa (opcional)">
 <option>Antofagasta</option>
 <option>Calama</option>
 <option>San Pedro de Atacama</option>
-<option>Tocopilla</option>
-<option>Mejillones</option>
-<option>Taltal</option>
 <option>Ollagüe</option>
-<option>Sierra Gorda</option>
-<option>María Elena</option>
-<option>Baquedano</option>
+
 <option>Chiu Chiu</option>
 <option>Lasana</option>
+
+<option>Ayquina</option>
+<option>Toconce</option>
 <option>Caspana</option>
+
 <option>Toconao</option>
 <option>Socaire</option>
 <option>Peine</option>
+
+<option>Machuca</option>
+<option>Rio Grande</option>
+
+<option>Catarpe</option>
+
+<option>Talabre</option>
+<option>Camar</option>
+
+<option>Mejillones</option>
+<option>Sierra Gorda</option>
+<option>Baquedano</option>
+
+<option>Taltal</option>
+<option>Paposo</option>
+<option>Cifuncho</option>
+
+<option>Tocopilla</option>
+<option>Punta Gorda</option>
+
+<option>María Elena</option>
 <option>Quillagua</option>
+<option>Cobija</option>
+<option>Michilla</option>
+<option>Hornitos</option>
 
 </select>
 
@@ -792,12 +831,12 @@ Guardar
 <div id="panelInspiracion">
 
     <h3>
-        🌱 Participa en la Sostenibilidad
+        🌱 Crea tu idea Sostenible y participa.
     </h3>
 
     <img
         id="fotoLocalidad"
-        src="img/localidades/calama/1.jpg"
+        src="img/zonas/calama/1.jpg"
     >
 
     <div id="infoLocalidad">
@@ -914,6 +953,141 @@ actualizarODS();
 
 setTimeout(()=>{
 
+const localidad =
+document.getElementById(
+"localidad"
+);
+if(localidad){
+
+    localidad.value =
+    ciudadMasCercana[0];
+    console.log(
+"CIUDAD DETECTADA:",
+ciudadMasCercana[0]
+);
+
+actualizarZona();
+
+
+}
+
+function actualizarZona(){
+
+    const valor = localidad.value;
+    console.log(
+"Localidad:",
+valor
+);
+
+   const equivalencias = {
+
+"Ollagüe":"ollague",
+
+"Quillagua":"quillagua",
+
+"Tocopilla":"tocopilla",
+"Punta Gorda":"tocopilla",
+
+"Caspana":"caspana",
+"Toconce":"caspana",
+"Ayquina":"caspana",
+
+"Lasana":"lasana",
+"Chiu Chiu":"lasana",
+
+"Calama":"calama",
+
+"San Pedro de Atacama":"sanpedro",
+"Catarpe":"sanpedro",
+
+"María Elena":"mariaelena",
+
+"Sierra Gorda":"sierragorda",
+
+"Mejillones":"mejillones",
+"Michilla":"mejillones",
+"Hornitos":"mejillones",
+"Cobija":"mejillones",
+
+"Machuca":"machuca",
+"Rio Grande":"machuca",
+
+"Toconao":"toconao",
+"Socaire":"toconao",
+"Peine":"toconao",
+"Talabre":"toconao",
+"Camar":"toconao",
+
+"Antofagasta":"antofagasta",
+
+"Baquedano":"baquedano",
+
+"Taltal":"taltal",
+"Paposo":"taltal",
+"Cifuncho":"taltal"
+
+};
+
+    zonaActual =
+    equivalencias[valor] || "antofagasta";
+    console.log("Localidad:", valor);
+    console.log("Zona:",zonaActual
+);
+
+    fotoActual = 0;
+
+    document.getElementById(
+        "fotoLocalidad"
+    ).src =
+    zonas[zonaActual].fotos[0];
+
+    document.getElementById(
+        "infoLocalidad"
+    ).innerHTML =
+    zonas[zonaActual].textos[0];
+
+}
+
+setTimeout(()=>{
+
+    const localidad =
+    document.getElementById("localidad");
+
+    if(!localidad) return;
+
+    localidad.addEventListener(
+        "change",
+        actualizarZona
+    );
+
+    actualizarZona();
+
+    if(intervaloFotos){
+
+        clearInterval(intervaloFotos);
+
+    }
+
+  if(intervaloFotos){
+
+    clearInterval(intervaloFotos);
+
+}
+
+intervaloFotos = setInterval(()=>{
+
+    cambiarFoto(1);
+
+},9000);
+
+},500);
+
+},300);
+
+});
+
+setTimeout(()=>{
+
 const btnSig =
 document.getElementById(
 "siguienteFoto"
@@ -948,42 +1122,487 @@ cambiarFoto(-1);
 
 },100);
 
-
-});
- 
+let intervaloFotos = null;
 let fotoActual = 0;
 
-const fotosDemo = [
+let zonaActual = "calama";
 
-"img/zonas/calama/1.jpg",
-"img/zonas/calama/2.jpg",
-"img/zonas/calama/3.jpg",
-"img/zonas/calama/4.jpg"
+const zonas = {
 
-];
+  calama:{
+
+    fotos:[
+
+        "img/zonas/calama/1.jpg",
+        "img/zonas/calama/2.jpg",
+        "img/zonas/calama/3.jpg",
+        "img/zonas/calama/4.jpg"
+
+    ],
+
+    textos:[
+
+       `💧 ODS 6 - Agua limpia y saneamiento
+
+Calama enfrenta importantes desafíos relacionados con la gestión sostenible del agua en un entorno desértico.
+
+Reflexiona sobre soluciones innovadoras que permitan optimizar el consumo hídrico, reutilizar aguas grises, mejorar sistemas de riego o fomentar la educación ambiental dentro de la comunidad.`,
+
+        
+`♻️ ODS 12 - Producción y consumo responsables
+
+La economía circular puede transformarse en una herramienta clave para reducir residuos y optimizar recursos.
+
+Propón iniciativas enfocadas en reciclaje, reutilización de materiales, gestión de residuos o consumo responsable que aporten beneficios a la comunidad.`,
+
+        `☀️ ODS 7 - Energía asequible y no contaminante
+
+La alta radiación solar presente en el territorio representa una oportunidad para impulsar energías renovables.
+
+Considera propuestas relacionadas con eficiencia energética, energías limpias, infraestructura sostenible o tecnologías que ayuden a reducir el consumo energético.`,
+
+        
+`🏭 ODS 9 - Industria, innovación e infraestructura
+
+Calama posee una fuerte vinculación con actividades productivas e industriales.
+
+Piensa en soluciones tecnológicas, automatización de procesos, innovación territorial o mejoras que permitan generar un desarrollo más sostenible y competitivo.`,
+
+    ]
+
+},
+
+  antofagasta:{
+
+fotos:[
+
+"img/zonas/antofagasta/1.jpg",
+"img/zonas/antofagasta/2.jpg",
+"img/zonas/antofagasta/3.jpg",
+"img/zonas/antofagasta/4.jpg"
+
+],
+
+textos:[
+
+`🌊 ODS 14 - Vida submarina
+
+Analice propuestas relacionadas con la protección del borde costero, limpieza de playas y educación ambiental orientada al océano.`,
+
+`🚍 ODS 11 - Ciudades sostenibles
+
+Piense en iniciativas de movilidad, espacios públicos, arborización urbana y calidad de vida.`,
+
+`🌍 ODS 13 - Acción climática
+
+Considere medidas de adaptación al cambio climático y reducción de emisiones.`,
+
+`♻️ ODS 12 - Producción responsable
+
+Promueva reutilización, reciclaje y economía circular.`
+
+]
+
+},
+
+ollague:{
+fotos:[
+"img/zonas/ollague/1.jpg",
+"img/zonas/ollague/2.jpg",
+"img/zonas/ollague/3.jpg",
+"img/zonas/ollague/4.jpg"
+],
+textos:[
+`💧 ODS 6 - Agua limpia y saneamiento
+
+La disponibilidad de agua es un factor clave para el desarrollo sostenible de Ollagüe.
+
+Reflexiona sobre proyectos relacionados con ahorro hídrico, monitoreo de recursos naturales, reutilización de aguas o educación ambiental que contribuyan al bienestar de la comunidad.`,
+`☀️ ODS 7 - Energía asequible y no contaminante
+
+Las condiciones climáticas de la zona permiten explorar soluciones basadas en energías renovables.
+
+Considera propuestas relacionadas con energía solar, eficiencia energética o tecnologías limpias para espacios comunitarios y productivos.`,
+`🌱 ODS 15 - Vida de ecosistemas terrestres
+
+Los ecosistemas altoandinos poseen especies y paisajes únicos que requieren protección.
+
+Propón iniciativas orientadas a la conservación ambiental, restauración ecológica o fortalecimiento de la educación sobre biodiversidad local.`,
+`🌱 ODS 15 - Vida de ecosistemas terrestres
+
+Los ecosistemas altoandinos poseen especies y paisajes únicos que requieren protección.
+
+Propón iniciativas orientadas a la conservación ambiental, restauración ecológica o fortalecimiento de la educación sobre biodiversidad local.`,
+]
+},
+
+quillagua:{
+fotos:[
+"img/zonas/quillagua/1.jpg",
+"img/zonas/quillagua/2.jpg",
+"img/zonas/quillagua/3.jpg",
+"img/zonas/quillagua/4.jpg"
+],
+textos:[
+`💧 ODS 6 - Agua limpia y saneamiento
+
+Quillagua es conocida por su relación histórica con el río Loa y los desafíos asociados a la disponibilidad hídrica en el desierto más árido del mundo.
+
+Reflexiona sobre soluciones que promuevan el uso eficiente del agua, monitoreo de recursos hídricos o tecnologías que permitan fortalecer la resiliencia de la comunidad frente a la escasez.`,
+
+`🌱 ODS 15 - Vida de ecosistemas terrestres
+
+Los ecosistemas asociados al valle de Quillagua poseen un importante valor ecológico y cultural.
+
+Propón iniciativas orientadas a la conservación de la biodiversidad local, recuperación de espacios naturales o educación ambiental para las futuras generaciones.`,
+`♻️ ODS 12 - Producción y consumo responsables
+
+La economía circular ofrece oportunidades para reducir residuos y aprovechar recursos disponibles dentro de la comunidad.
+
+Considera proyectos de reciclaje, reutilización de materiales o valorización de residuos que contribuyan a un desarrollo más sostenible.`,
+
+`🤝 ODS 11 - Comunidades y asentamientos sostenibles
+
+Las pequeñas localidades enfrentan desafíos relacionados con infraestructura, servicios y desarrollo social.
+
+Piensa en propuestas innovadoras que fortalezcan la identidad local, mejoren espacios comunitarios o promuevan una mejor calidad de vida para sus habitantes.`
+]
+},
+
+tocopilla:{
+fotos:[
+"img/zonas/tocopilla/1.jpg",
+"img/zonas/tocopilla/2.jpg",
+"img/zonas/tocopilla/3.jpg",
+"img/zonas/tocopilla/4.jpg"
+],
+textos:[
+`🌊 ODS 14 - Vida submarina
+
+El borde costero de Tocopilla posee una importante riqueza marina y ecológica que requiere protección para las futuras generaciones.
+
+Reflexiona sobre iniciativas relacionadas con limpieza de playas, conservación de ecosistemas marinos, educación ambiental o reducción de residuos que puedan impactar positivamente en la comunidad.`,
+`⚓ ODS 8 - Trabajo decente y crecimiento económico
+
+La actividad portuaria, pesquera y de servicios representa una oportunidad para el desarrollo local sostenible.
+
+Piensa en propuestas que fomenten la innovación, el emprendimiento y la generación de oportunidades para la comunidad sin comprometer el medio ambiente.`,
+`♻️ ODS 12 - Producción y consumo responsables
+
+La gestión eficiente de residuos constituye un desafío permanente para las ciudades costeras.
+
+Considera soluciones orientadas al reciclaje, reutilización de materiales, recuperación de residuos o educación ciudadana para promover hábitos sostenibles.`,
+`🌍 ODS 13 - Acción por el clima
+
+Las zonas costeras son especialmente sensibles a los efectos del cambio climático y eventos ambientales extremos.
+
+Propón iniciativas que permitan fortalecer la resiliencia territorial, mejorar la adaptación climática y promover prácticas sostenibles en beneficio de la comunidad.`
+]
+},
+
+caspana:{
+fotos:[
+"img/zonas/caspana/1.jpg",
+"img/zonas/caspana/2.jpg",
+"img/zonas/caspana/3.jpg",
+"img/zonas/caspana/4.jpg",
+"img/zonas/caspana/5.jpg"
+
+],
+textos:[
+`💧 ODS 6 - Agua limpia y saneamiento
+
+Caspana depende históricamente de la gestión eficiente del agua para el desarrollo de la vida comunitaria y agrícola.
+
+Reflexiona sobre iniciativas relacionadas con reutilización de aguas, sistemas de riego eficientes, monitoreo hídrico o educación ambiental orientada al cuidado de este recurso fundamental.`,
+`🌱 ODS 15 - Vida de ecosistemas terrestres
+
+Los ecosistemas altoandinos poseen una biodiversidad única que requiere protección y conservación.
+
+Considera propuestas que promuevan restauración ecológica, protección de flora y fauna nativa o educación para la conservación del patrimonio natural.`,
+`☀️ ODS 7 - Energía asequible y no contaminante
+
+Las condiciones ambientales de la zona ofrecen oportunidades para el desarrollo de energías renovables.
+
+Piensa en soluciones vinculadas a energía solar, eficiencia energética o tecnologías limpias aplicables a viviendas y espacios comunitarios.`,
+`🤝 ODS 11 - Comunidades sostenibles
+
+El patrimonio cultural y comunitario de Caspana constituye un elemento clave para su desarrollo futuro.
+
+Propón iniciativas que fortalezcan la identidad local, mejoren espacios públicos o promuevan un desarrollo territorial sostenible.`,
+`♻️ ODS 12 - Producción y consumo responsables
+
+La valorización de recursos y la reducción de residuos pueden generar beneficios ambientales y económicos para la comunidad.
+
+Reflexiona sobre proyectos de reciclaje, reutilización de materiales o economía circular adaptados al entorno local.`
+]
+},
+
+lasana:{
+fotos:[
+"img/zonas/lasana/1.jpg",
+"img/zonas/lasana/2.jpg",
+"img/zonas/lasana/3.jpg",
+"img/zonas/lasana/4.jpg"
+],
+textos:[
+`🏛️ ODS 11 - Ciudades y comunidades sostenibles
+
+Lasana y Chiu Chiu poseen un importante patrimonio histórico, arqueológico y cultural que forma parte de la identidad del territorio.
+
+Reflexiona sobre iniciativas orientadas a la conservación patrimonial, puesta en valor de sitios históricos o fortalecimiento del turismo sostenible para las futuras generaciones.`,
+`💧 ODS 6 - Agua limpia y saneamiento
+
+Las comunidades del valle han dependido históricamente de una gestión eficiente del agua para su desarrollo.
+
+Considera propuestas relacionadas con monitoreo hídrico, optimización de sistemas de riego, reutilización de aguas o educación para el uso responsable de este recurso estratégico.`,
+`🌱 ODS 15 - Vida de ecosistemas terrestres
+
+Los ecosistemas asociados al río Loa albergan especies y paisajes únicos dentro del desierto de Atacama.
+
+Piensa en proyectos enfocados en conservación ambiental, restauración ecológica o protección de la biodiversidad local.`,
+`🤝 ODS 8 - Trabajo decente y crecimiento económico
+
+El desarrollo del turismo, la artesanía y los servicios locales puede generar nuevas oportunidades para la comunidad.
+
+Propón iniciativas innovadoras que fortalezcan la economía local y contribuyan a un crecimiento sostenible del territorio.`
+]
+},
+
+sanpedro:{
+fotos:[
+"img/zonas/sanpedro/1.jpg",
+"img/zonas/sanpedro/2.jpg",
+"img/zonas/sanpedro/3.jpg",
+"img/zonas/sanpedro/4.jpg"
+],
+textos:[
+
+`🌱 ODS 15 - Vida de ecosistemas terrestres
+
+Los paisajes y ecosistemas del desierto de Atacama poseen un valor ambiental único a nivel mundial.
+
+Piensa en proyectos orientados a la conservación de la biodiversidad, restauración ecológica o protección de áreas naturales y patrimoniales.`,
+`🤝 ODS 8 - Trabajo decente y crecimiento económico
+
+La actividad turística genera oportunidades de desarrollo para las comunidades locales.
+
+Propón iniciativas que promuevan innovación, emprendimiento, capacitación o nuevas oportunidades económicas sostenibles para el territorio.`,
+`🏜️ ODS 11 - Ciudades y comunidades sostenibles
+
+San Pedro de Atacama es uno de los destinos turísticos más importantes del norte de Chile y enfrenta desafíos asociados al crecimiento urbano y la sostenibilidad del territorio.
+
+Reflexiona sobre propuestas que permitan mejorar la calidad de vida de la comunidad local, fortalecer la planificación territorial o promover un turismo responsable y sostenible.`,
+`💧 ODS 6 - Agua limpia y saneamiento
+
+La disponibilidad de agua es uno de los principales desafíos ambientales de la zona.
+
+Considera iniciativas relacionadas con eficiencia hídrica, reutilización de aguas, monitoreo ambiental o educación para el uso responsable de este recurso fundamental.`,
+]
+},
+
+mariaelena:{
+fotos:[
+"img/zonas/mariaelena/1.jpg",
+"img/zonas/mariaelena/2.jpg",
+"img/zonas/mariaelena/3.jpg",
+"img/zonas/mariaelena/4.jpg"
+],
+textos:[
+`🤝 ODS 8 - Trabajo decente y crecimiento económico
+
+El desarrollo local requiere nuevas oportunidades de innovación, emprendimiento y fortalecimiento del capital humano.
+
+Propón acciones que impulsen la capacitación, el empleo sostenible o la generación de nuevas actividades económicas con impacto positivo en la comunidad.`,
+`☀️ ODS 7 - Energía asequible y no contaminante
+
+Las condiciones climáticas de la zona ofrecen oportunidades para impulsar soluciones energéticas sostenibles.
+
+Considera propuestas relacionadas con energía solar, eficiencia energética, iluminación inteligente o tecnologías limpias que contribuyan a reducir el impacto ambiental.`,
+`🏛️ ODS 11 - Ciudades y comunidades sostenibles
+
+María Elena representa una parte importante de la historia del norte de Chile y enfrenta desafíos asociados al desarrollo urbano sostenible y la conservación de su identidad territorial.
+
+Reflexiona sobre proyectos que permitan revitalizar espacios comunitarios, mejorar la calidad de vida y fortalecer el patrimonio local para las futuras generaciones.`,
+
+`♻️ ODS 12 - Producción y consumo responsables
+
+La economía circular puede transformarse en una herramienta clave para optimizar recursos y reducir residuos.
+
+Piensa en iniciativas orientadas al reciclaje, reutilización de materiales, educación ambiental o gestión responsable de residuos dentro de la comunidad.`
+]
+},
+
+sierragorda:{
+fotos:[
+"img/zonas/sierragorda/1.jpg",
+"img/zonas/sierragorda/2.jpg",
+"img/zonas/sierragorda/3.jpg",
+"img/zonas/sierragorda/4.jpg"
+],
+textos:[
+`☀️ ODS 7 - Energía asequible y no contaminante
+
+Las condiciones del territorio presentan oportunidades para el desarrollo de energías renovables y soluciones energéticas innovadoras.
+
+Piensa en proyectos asociados a energía solar, eficiencia energética o tecnologías limpias aplicadas a la comunidad y la industria.`,
+`🏭 ODS 9 - Industria, innovación e infraestructura
+
+Sierra Gorda desempeña un papel estratégico en el desarrollo productivo de la región y enfrenta desafíos relacionados con infraestructura, innovación y sostenibilidad.
+
+Reflexiona sobre propuestas que permitan incorporar nuevas tecnologías, optimizar procesos o fortalecer soluciones que contribuyan al desarrollo territorial sostenible.`,
+`💧 ODS 6 - Agua limpia y saneamiento
+
+La gestión eficiente del recurso hídrico es un desafío permanente en territorios desérticos.
+
+Considera iniciativas relacionadas con monitoreo hídrico, reutilización de aguas, eficiencia en procesos o educación para el cuidado de este recurso fundamental.`,
+`🌍 ODS 13 - Acción por el clima
+
+La adaptación al cambio climático requiere soluciones innovadoras capaces de reducir impactos ambientales y promover una gestión responsable del territorio.
+
+Propón iniciativas que fomenten sostenibilidad, reducción de emisiones o fortalecimiento de prácticas ambientales responsables.`
+]
+},
+
+mejillones:{
+fotos:[
+"img/zonas/mejillones/1.jpg",
+"img/zonas/mejillones/2.jpg",
+"img/zonas/mejillones/3.jpg",
+"img/zonas/mejillones/4.jpg"
+],
+textos:[
+`⚓ ODS 8 - Trabajo decente y crecimiento económico
+
+Las actividades portuarias, logísticas y productivas generan oportunidades para el desarrollo territorial sostenible.
+
+Piensa en iniciativas que promuevan innovación, capacitación, emprendimiento y nuevas oportunidades para la comunidad local.`,
+`🌍 ODS 13 - Acción por el clima
+
+El desarrollo sostenible requiere acciones concretas para enfrentar los efectos del cambio climático y reducir impactos ambientales.
+
+Propón soluciones que permitan fortalecer la resiliencia territorial y fomentar prácticas responsables dentro de la comunidad.`,
+`♻️ ODS 12 - Producción y consumo responsables
+
+sabias que en Hornito La gestión eficiente de residuos constituye un desafío permanente para los territorios costeros e industriales.
+
+Considera proyectos relacionados con reciclaje, economía circular, reutilización de materiales y uso eficiente de recursos.`,
+`🌊 ODS 14 - Vida submarina
+
+El borde costero de Mejillones y las localidades cercanas poseen ecosistemas marinos de gran valor ecológico para la región.
+
+Reflexiona sobre propuestas orientadas a la conservación del océano, reducción de residuos costeros, protección de la biodiversidad marina y fortalecimiento de la educación ambiental.`
+]
+},
+
+machuca:{
+fotos:[
+"img/zonas/machuca/1.jpg",
+"img/zonas/machuca/2.jpg",
+"img/zonas/machuca/3.jpg",
+"img/zonas/machuca/4.jpg"
+],
+textos:[
+
+`🌱 ODS 15 - Vida de ecosistemas terrestres
+
+Machuca y Río Grande forman parte de un entorno natural de alto valor ecológico y cultural dentro del altiplano atacameño.
+
+Reflexiona sobre iniciativas que contribuyan a la protección de la biodiversidad, conservación de hábitats naturales y fortalecimiento de la educación ambiental para las futuras generaciones.`,
+`🤝 ODS 11 - Comunidades y asentamientos sostenibles
+
+Las localidades rurales enfrentan desafíos asociados a conectividad, infraestructura y preservación de su identidad territorial.
+
+Piensa en soluciones innovadoras que permitan fortalecer la calidad de vida de la comunidad y promover un desarrollo sostenible respetuoso con su patrimonio cultural.`,
+`💧 ODS 6 - Agua limpia y saneamiento
+
+La disponibilidad y gestión sostenible del agua son fundamentales para la permanencia y desarrollo de las comunidades altoandinas.
+
+Considera propuestas relacionadas con eficiencia hídrica, monitoreo de recursos, reutilización de agua o sensibilización sobre el cuidado de este recurso esencial.`,
+`☀️ ODS 7 - Energía asequible y no contaminante
+
+Las características climáticas del territorio generan oportunidades para impulsar energías renovables y tecnologías sustentables.
+
+Propón proyectos relacionados con energía solar, eficiencia energética o soluciones tecnológicas que beneficien a la comunidad local.`
+]
+},
+
+toconao:{
+fotos:[
+"img/zonas/toconao/1.jpg",
+"img/zonas/toconao/2.jpg",
+"img/zonas/toconao/3.jpg",
+"img/zonas/toconao/4.jpg"
+],
+textos:[
+"Contenido Toconao 1",
+"Contenido Toconao 2",
+"Contenido Toconao 3",
+"Contenido Toconao 4"
+]
+},
+
+baquedano:{
+fotos:[
+"img/zonas/baquedano/1.jpg",
+"img/zonas/baquedano/2.jpg",
+"img/zonas/baquedano/3.jpg",
+"img/zonas/baquedano/4.jpg"
+],
+textos:[
+"Contenido Baquedano 1",
+"Contenido Baquedano 2",
+"Contenido Baquedano 3",
+"Contenido Baquedano 4"
+]
+},
+
+taltal:{
+fotos:[
+"img/zonas/taltal/1.jpg",
+"img/zonas/taltal/2.jpg",
+"img/zonas/taltal/3.jpg",
+"img/zonas/taltal/4.jpg"
+],
+textos:[
+"Contenido Taltal 1",
+"Contenido Taltal 2",
+"Contenido Taltal 3",
+"Contenido Taltal 4"
+]
+
+}
+
+};
 
 function cambiarFoto(direccion){
 
-fotoActual += direccion;
+    const datos = zonas[zonaActual];
 
-if(fotoActual < 0){
+    fotoActual += direccion;
 
-fotoActual = fotosDemo.length - 1;
+    if(fotoActual < 0){
+
+        fotoActual = datos.fotos.length - 1;
+
+    }
+
+    if(fotoActual >= datos.fotos.length){
+
+        fotoActual = 0;
+
+    }
+
+    document.getElementById(
+        "fotoLocalidad"
+    ).src = datos.fotos[fotoActual];
+
+    document.getElementById(
+        "infoLocalidad"
+    ).innerHTML =
+    datos.textos[fotoActual];
 
 }
-
-if(fotoActual >= fotosDemo.length){
-
-fotoActual = 0;
-
-}
-
-document.getElementById(
-"fotoLocalidad"
-).src = fotosDemo[fotoActual];
-
-}
-
 //===================
 // GUARDAR
 //===================
