@@ -295,7 +295,7 @@ border:none;
 
 padding:10px;
 
-border-radius:8px;
+border-radius:4px;
 
 cursor:pointer;
 
@@ -336,7 +336,7 @@ text-align:center;
 
 width:100%;
 
-height:180px;
+height:120px;
 
 object-fit:cover;
 
@@ -352,7 +352,7 @@ font-size:14px;
 
 line-height:1.6;
 
-min-height:100px;
+min-height:90px;
 
 }
 
@@ -409,65 +409,45 @@ z-index:99999;
 }
 @media (max-width:768px){
 
-   
-.leaflet-popup{
+    .contenedorGeo{
 
-    width:95vw !important;
+        flex-direction:column;
 
-}
+        min-width:auto;
 
-.leaflet-popup-content{
-
-    width:85vw !important;
-
-    max-width:85vw !important;
-
-}
-   .contenedorGeo{
-
-        display:block !important;
-
-        width:100% !important;
-
-}
-
-   .formulario{
-
-    width:95vw !important;
-
-    max-width:95vw !important;
-
-}
-
-   #panelInspiracion{
-
-    display:none !important;
-
-}
-
-   #fotoLocalidad{
-
-height:140px;
-
-}
-
-   #infoLocalidad{
-
-max-height:100px;
-   }
-
-    input,
-    select,
-    textarea,
-    button{
-
-        font-size:16px;
+        width:100%;
 
     }
 
-    textarea{
+    .formulario{
 
-        min-height:120px;
+        width:95%;
+
+    }
+
+    #panelInspiracion{
+
+        width:95%;
+
+    }
+
+    #fotoLocalidad{
+
+        height:220px;
+
+    }
+
+    .leaflet-popup-content{
+
+        width:95vw !important;
+
+        max-width:95vw !important;
+
+    }
+
+    .leaflet-popup-content-wrapper{
+
+        max-width:95vw !important;
 
     }
 
@@ -490,7 +470,7 @@ class="logo"
 <div class="header-text">
 
 <h3>
-Tu propuestas de Sostenibilidad
+Propuestas de Sostenibilidad
 </h3>
 
 <p>
