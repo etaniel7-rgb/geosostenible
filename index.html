@@ -639,14 +639,14 @@ lugares.addTo(map);
 // CONTROL DE CAPAS
 //===================
 
-L.control.layers(
+/*L.control.layers(
 {
 "🛰️ Satélite": satelite
 },
 {
 "📍 Nombres y lugares": etiquetas
 }
-).addTo(map);
+).addTo(map);*/
 
 //===================
 // CIUDADES
@@ -863,7 +863,7 @@ placeholder="Correo">
 
 <input
 id="titulo"
-placeholder="Nombre propuesta">
+placeholder="Nombre de la propuesta">
 
 <select id="categoria">
 
@@ -1960,8 +1960,17 @@ location.reload();
 //===================
 // ELIMINAR
 //===================
-
 function eliminarPropuesta(id){
+
+if(!admin){
+
+alert(
+"Solo el administrador puede eliminar propuestas"
+);
+
+return;
+
+}
 
 if(
 !confirm(
@@ -1984,7 +1993,6 @@ JSON.stringify(propuestas)
 location.reload();
 
 }
-
 //===================
 // LISTADO PROPUESTAS
 //===================
