@@ -583,7 +583,11 @@ Región de Antofagasta
 // MAPA
 //===================
 
-const map = L.map('map').setView(
+const map = L.map('map').setView("map",
+{
+    zoomControl:false
+}
+
 [-23.65,-70.40],
 8
 );
