@@ -11,6 +11,8 @@
 rel="stylesheet"
 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
+<!-- SDK de Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
@@ -263,7 +265,7 @@ width:100%;
 
 .formulario{
 
-width:200px;
+width:240px;
 
 display:flex;
 
@@ -316,7 +318,7 @@ min-width:600px;
 
 #panelInspiracion{
 
-width:300px;
+width:350px;
 
 background:white;
 
@@ -342,9 +344,9 @@ text-align:center;
 
 width:100%;
 
-height:90px;
+height:180px;
 
-object-fit:cover;
+object-fit:contain;
 
 border-radius:8px;
 
@@ -413,6 +415,33 @@ font-weight:bold;
 z-index:99999;
 
 }
+
+/* ESTILO POPUPS PROPUESTAS */
+
+.leaflet-popup-content h3{
+
+color:#C8102E;
+
+margin-bottom:8px;
+
+font-size:20px;
+
+font-weight:700;
+
+}
+
+.leaflet-popup-content{
+
+line-height:1.6;
+
+}
+
+.leaflet-popup-content b{
+
+color:#333;
+
+}
+
 @media (max-width:768px){
 
     .contenedorGeo{
@@ -452,7 +481,6 @@ z-index:99999;
 
     .leaflet-popup-content-wrapper{
 
-        
         margin-top:25px;
 
     }
@@ -526,7 +554,9 @@ Región de Antofagasta
 <div id="contador">
 0 
 </div>
-
+<button onclick="mostrarQR()">
+📱 Escanear QR
+</button>
 </div>
 
 </header>
@@ -570,6 +600,39 @@ Región de Antofagasta
 <div id="panelPropuestas"></div>
 <div id="modalPropuesta"></div>
 
+<div id="modalQR" style="
+display:none;
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:rgb(153, 44, 44);
+padding:20px;
+border-radius:14px;
+z-index:999999;
+text-align:center;
+">
+
+<h3>Escanea para participar, ingresa tu proopuesta </h3>
+
+<img
+src="img/qr-geosustenta.png"
+style="width:200px;"
+>
+
+<br><br>
+
+<button
+onclick="
+document.getElementById(
+'modalQR'
+).style.display='none'
+"
+>
+Cerrar
+</button>
+
+</div>
 <div id="map"></div>
 <div id="togglePanel">
 ▶
@@ -580,20 +643,31 @@ Región de Antofagasta
 <script>
 
 //===================
+// CONFIGURACIÓN SUPABASE
+//===================
+const clienteSupabase =
+window.supabase.createClient(
+'https://reshhxljjgndhadvsazo.supabase.co',
+'sb_publishable_bjjm-IJ3NF7KT7bgBLacmw_-6oi14yK'
+);
+//===================
 // MAPA
 //===================
 
 const map = L.map(
 'map',
 {
-    zoomControl:false
+    zoomControl:false,
+    minZoom:7,
+    maxZoom:16
 }
 ).setView(
 [-23.65,-70.40],
 8
 );
+
 //===================
-// CAPA SATELITAL
+// CAPAS
 //===================
 
 const satelite = L.tileLayer(
@@ -602,16 +676,6 @@ const satelite = L.tileLayer(
 attribution:'Esri Satellite'
 }
 );
-
-//===================
-// CAPA CALLES
-//===================
-
-
-
-//===================
-// CAPA RUTAS Y NOMBRES
-//===================
 
 const etiquetas = L.tileLayer(
 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
@@ -627,35 +691,15 @@ opacity:1
 }
 );
 
-//===================
-// SATELITE POR DEFECTO
-//===================
-
 satelite.addTo(map);
 etiquetas.addTo(map);
 lugares.addTo(map);
-
-//===================
-// CONTROL DE CAPAS
-//===================
-
-/*L.control.layers(
-{
-"🛰️ Satélite": satelite
-},
-{
-"📍 Nombres y lugares": etiquetas
-}
-).addTo(map);*/
 
 //===================
 // CIUDADES
 //===================
 
 const ciudades = [
-
-
-  // --- PROVINCIA DE EL LOA ---
   ["Calama", -22.4567, -68.9237],
   ["San Pedro de Atacama", -22.9087, -68.1997],
   ["Ollagüe", -21.2223, -68.2528],
@@ -668,12 +712,11 @@ const ciudades = [
   ["Caspana", -22.3503, -68.2257],
   ["Toconce", -22.2618, -68.1818],
   ["Machuca", -22.5936, -68.0631],
+  ["Guatín", -22.7667, -68.0833],
   ["Talabre", -23.3180, -67.8920],
   ["Camar", -23.4140, -67.9620],
   ["Rio Grande", -22.6467, -68.1678],
   ["Catarpe", -22.8801, -68.2092],
-
-  // --- PROVINCIA DE ANTOFAGASTA ---
   ["Antofagasta", -23.6509, -70.3975],
   ["Mejillones", -23.0964, -70.4483],
   ["Taltal", -25.4084, -70.4835],
@@ -683,18 +726,14 @@ const ciudades = [
   ["Paposo", -25.0101, -70.4632],
   ["Cifuncho", -25.5658, -70.6433],
   ["Michilla", -22.7163, -70.2647],
-
-  // --- PROVINCIA DE TOCOPILLA ---
   ["Tocopilla", -22.0894, -70.1979],
   ["María Elena", -22.3507, -69.6681],
   ["Quillagua", -21.6582, -69.5350],
   ["Cobija", -22.5482, -70.2541],
   ["Punta Gorda", -21.9058, -70.1788],
-  
 ];
 
 ciudades.forEach(c=>{
-
 L.circleMarker(
 [c[1],c[2]],
 {
@@ -711,7 +750,6 @@ c[0],
 permanent:true
 }
 );
-
 });
 
 //===================
@@ -723,19 +761,23 @@ localStorage.getItem("admin")
 === "true";
 
 //===================
-// PROPUESTAS
+// PROPUESTAS (SUPABASE)
 //===================
 
-let propuestas =
-JSON.parse(
-localStorage.getItem("propuestas")
-) || [];
+let propuestas = [];
 
-actualizarContador();
+async function cargarPropuestas() {
+    const { data, error } = await clienteSupabase.from('propuestas').select('*');
+    if (error) {
+        console.error("Error al cargar propuestas desde Supabase:", error);
+        return;
+    }
+    propuestas = data || [];
+    actualizarContador();
+    propuestas.forEach(crearMarcador);
+}
 
-propuestas.forEach(
-crearMarcador
-);
+cargarPropuestas();
 
 //===================
 // MENU
@@ -783,9 +825,11 @@ ciudades.forEach(c=>{
 
 });
 
+
 L.popup()
 .setLatLng(e.latlng)
 .setContent(`
+
 
 <div class="contenedorGeo">
 <div class="formulario">
@@ -794,11 +838,11 @@ L.popup()
 
 <option>🎓 Estudiante INACAP</option>
 
-<option>👨‍🏫 Docente INACAP/Colaboradores</option>
+<option>👨‍🏫 Docente /Colaboradores INACAP</option>
 
 <option>🏢 Empresa</option>
 
-<option>👥 Comunidades de la region</option>
+<option>👥 Comunidades de la región</option>
 
 <option>🏛️ Organismo Público</option>
 
@@ -828,6 +872,8 @@ placeholder="Empresa (opcional)">
 
 <option>Machuca</option>
 <option>Rio Grande</option>
+
+<option>Guatín</option>
 
 <option>Catarpe</option>
 
@@ -859,7 +905,10 @@ placeholder="Nombre completo">
 
 <input
 id="correo"
-placeholder="Correo">
+type="email"
+maxlength="120"
+required
+placeholder="Correo electrónico">
 
 <input
 id="titulo"
@@ -890,12 +939,14 @@ placeholder="Nombre de la propuesta">
 <input
 id="ods"
 readonly
-placeholder="ODS asociado"
+style="font-size:12px;"
+placeholder="ODS asociados"
 >
 
 <textarea
 id="descripcion"
-placeholder="Descripción">
+maxlength="500"
+placeholder="Descripción (máximo 500 caracteres)">
 </textarea>
 
 <button
@@ -927,7 +978,7 @@ Guardar
 
         Selecciona una localidad para
         conocer desafíos y oportunidades
-        asociadas a los ODS.
+        asociadas al ODS.
 
     </div>
 
@@ -952,6 +1003,12 @@ Guardar
 
 setTimeout(()=>{
 
+map.panBy([0,-190]);
+
+},100);
+
+setTimeout(()=>{
+
 const categoria =
 document.getElementById("categoria");
 
@@ -965,64 +1022,66 @@ categoria.value;
 
 if(valor.includes("Economía")){
 
+
 ods.value =
-"ODS 12 - Producción y Consumo Responsables";
+"ODS 12 ♻️ | ODS 9 🏭 | ODS 13 🌍";
 
 }
 
 else if(valor.includes("Hídricos")){
 
 ods.value =
-"ODS 6 - Agua Limpia y Saneamiento";
+"ODS 6 💧 | ODS 13 🌍 | ODS 15 🌱";
 
 }
 
 else if(valor.includes("Energía")){
 
+
 ods.value =
-"ODS 7 - Energía Asequible y No Contaminante";
+"ODS 7 ☀️ | ODS 9 🏭 | ODS 13 🌍";
 
 }
 
 else if(valor.includes("Biodiversidad")){
 
 ods.value =
-"ODS 15 - Vida de Ecosistemas Terrestres";
+"ODS 15 🌱 | ODS 13 🌍 | ODS 6 💧";
 
 }
 
 else if(valor.includes("Impacto Social")){
 
 ods.value =
-"ODS 10 - Reducción de Desigualdades";
+"ODS 10 🤝 | ODS 4 🏫 | ODS 11 🏙️";
 
 }
 
 else if(valor.includes("Educación")){
 
 ods.value =
-"ODS 4 - Educación de Calidad";
+"ODS 4 🏫 | ODS 13 🌍 | ODS 12 ♻️";
 
 }
 
 else if(valor.includes("Industrial")){
 
 ods.value =
-"ODS 9 - Industria, Innovación e Infraestructura";
+"ODS 9 🏭 | ODS 7 ☀️ | ODS 12 ♻️";
 
 }
 
 else if(valor.includes("Movilidad")){
 
 ods.value =
-"ODS 11 - Ciudades y Comunidades Sostenibles";
+"ODS 11 🚦 | ODS 13 🌍 | ODS 9 🏭";
 
 }
 
 else if(valor.includes("Climática")){
 
 ods.value =
-"ODS 13 - Acción por el Clima";
+"ODS 13 🌍 | ODS 7 ☀️ | ODS 15 🌱";
 
 }
 
@@ -1045,23 +1104,14 @@ if(localidad){
 
     localidad.value =
     ciudadMasCercana[0];
-    console.log(
-"CIUDAD DETECTADA:",
-ciudadMasCercana[0]
-);
 
 actualizarZona();
-
 
 }
 
 function actualizarZona(){
 
     const valor = localidad.value;
-    console.log(
-"Localidad:",
-valor
-);
 
    const equivalencias = {
 
@@ -1096,6 +1146,8 @@ valor
 "Machuca":"machuca",
 "Rio Grande":"machuca",
 
+"Guatín":"guatin",
+
 "Toconao":"toconao",
 "Socaire":"toconao",
 "Peine":"toconao",
@@ -1114,21 +1166,20 @@ valor
 
     zonaActual =
     equivalencias[valor] || "antofagasta";
-    console.log("Localidad:", valor);
-    console.log("Zona:",zonaActual
-);
 
     fotoActual = 0;
 
-    document.getElementById(
-        "fotoLocalidad"
-    ).src =
-    zonas[zonaActual].fotos[0];
+    if (typeof zonas !== 'undefined' && zonas[zonaActual]) {
+        document.getElementById(
+            "fotoLocalidad"
+        ).src =
+        zonas[zonaActual].fotos[0];
 
-    document.getElementById(
-        "infoLocalidad"
-    ).innerHTML =
-    zonas[zonaActual].textos[0];
+        document.getElementById(
+            "infoLocalidad"
+        ).innerHTML =
+        zonas[zonaActual].textos[0];
+    }
 
 }
 
@@ -1145,12 +1196,6 @@ setTimeout(()=>{
     );
 
     actualizarZona();
-
-    if(intervaloFotos){
-
-        clearInterval(intervaloFotos);
-
-    }
 
   if(intervaloFotos){
 
@@ -1586,6 +1631,45 @@ Reflexiona sobre propuestas orientadas a la conservación del océano, reducció
 ]
 },
 
+guatin:{
+fotos:[
+
+"img/zonas/guatin/1.jpg",
+"img/zonas/guatin/2.jpg",
+"img/zonas/guatin/3.jpg",
+"img/zonas/guatin/4.jpg"
+
+],
+
+textos:[
+
+`💧 ODS 6 - Agua limpia y saneamiento
+
+Guatín alberga importantes bofedales y ecosistemas asociados al agua en pleno desierto de Atacama.
+
+Reflexiona sobre iniciativas relacionadas con la protección de vertientes, uso eficiente del recurso hídrico, monitoreo ambiental o educación sobre la conservación del agua.`,
+
+`🌱 ODS 15 - Vida de ecosistemas terrestres
+
+Los bofedales y humedales de altura constituyen hábitats de gran valor ecológico para la biodiversidad local.
+
+Propón proyectos que contribuyan a la conservación de la flora y fauna nativa, restauración ecológica o protección de ecosistemas frágiles.`,
+
+`🌍 ODS 13 - Acción por el clima
+
+Los ecosistemas naturales cumplen un rol clave en la adaptación frente a los efectos del cambio climático.
+
+Considera iniciativas relacionadas con monitoreo ambiental, investigación aplicada, sensibilización ciudadana o protección del patrimonio natural frente a escenarios futuros.`,
+
+`🤝 ODS 11 - Comunidades y territorios sostenibles
+
+La conservación de espacios naturales requiere equilibrio entre desarrollo, turismo y protección ambiental.
+
+Piensa en propuestas que promuevan turismo responsable, infraestructura sostenible, educación ambiental y valorización del patrimonio natural del territorio.`
+
+]
+},
+
 machuca:{
 fotos:[
 "img/zonas/machuca/1.jpg",
@@ -1721,12 +1805,16 @@ Piensa en iniciativas relacionadas con reciclaje, reutilización y economía cir
 }
 
 };
-
 function cambiarFoto(direccion){
+    if(!document.getElementById("fotoLocalidad")){
+    return;
+}
 
     const datos = zonas[zonaActual];
 
     fotoActual += direccion;
+
+    
 
     if(fotoActual < 0){
 
@@ -1750,11 +1838,30 @@ function cambiarFoto(direccion){
     datos.textos[fotoActual];
 
 }
+
 //===================
-// GUARDAR
+// GUARDAR (SUPABASE)
 //===================
 
-function guardarPropuesta(lat,lng){
+async function guardarPropuesta(lat,lng){
+const correo =
+document.getElementById("correo").value;
+
+const { data: existente } =
+await clienteSupabase
+.from("propuestas")
+.select("correo")
+.eq("correo", correo);
+
+if(existente && existente.length > 0){
+
+alert(
+"Ya existe una propuesta registrada con este correo."
+);
+
+return;
+
+}    
 
 const propuesta = {
 
@@ -1806,18 +1913,22 @@ new Date().toLocaleTimeString()
 
 };
 
-propuestas.push(propuesta);
+const { error } = await clienteSupabase.from('propuestas').insert([propuesta]);
 
-localStorage.setItem(
-"propuestas",
-JSON.stringify(propuestas)
-);
+if (error) {
+    alert("Error al guardar en Supabase: " + error.message);
+    return;
+}
+
+propuestas.push(propuesta);
 
 crearMarcador(propuesta);
 
 actualizarContador();
 
 map.closePopup();
+
+alert("¡Propuesta guardada con éxito!");
 
 }
 
@@ -1829,11 +1940,29 @@ function crearMarcador(p){
 
 const popup = `
 
-<h3>${p.titulo}</h3>
+<div style="
+background:#C8102E;
+color:white;
+padding:6px 10px;
+border-radius:8px;
+font-size:13px;
+font-weight:bold;
+margin-bottom:10px;
+">
 
-<b>${p.categoria}</b>
+${p.categoria}
 
-<br><br>
+</div>
+
+<h3 style="
+color:#C8102E;
+font-size:20px;
+margin-bottom:8px;
+">
+
+${p.titulo}
+
+</h3>
 
 🎯 ${p.ods}
 
@@ -1958,9 +2087,9 @@ location.reload();
 }
 
 //===================
-// ELIMINAR
+// ELIMINAR (SUPABASE)
 //===================
-function eliminarPropuesta(id){
+async function eliminarPropuesta(id){
 
 if(!admin){
 
@@ -1980,19 +2109,24 @@ if(
 return;
 }
 
+const { error } = await clienteSupabase.from('propuestas').delete().eq('id', id);
+
+if (error) {
+    alert("Error al eliminar en Supabase: " + error.message);
+    return;
+}
+
 propuestas =
 propuestas.filter(
 p => p.id !== id
 );
 
-localStorage.setItem(
-"propuestas",
-JSON.stringify(propuestas)
-);
+alert("Propuesta eliminada");
 
 location.reload();
 
 }
+
 //===================
 // LISTADO PROPUESTAS
 //===================
@@ -2015,9 +2149,6 @@ return;
 }
 
 panel.style.display="block";
-
-panel.innerHTML =
-"<h2>📋 Propuestas Registradas</h2><br>";
 
 panel.innerHTML = `
 
@@ -2086,7 +2217,7 @@ border-radius:8px;
 
 `;
 
-propuestas.forEach(p=>{
+propuestas.forEach((p, index)=>{
 
 panel.innerHTML += `
 
@@ -2105,7 +2236,7 @@ border-bottom:1px solid #ddd;
 ">
 
 <div>
-${propuestas.indexOf(p)+1}
+${index+1}
 </div>
 
 <div>
@@ -2146,7 +2277,7 @@ font-weight:600;
 }
 
 //===================
-// CONTADOR
+// ABRIR PROPUESTA
 //===================
 function abrirPropuesta(id){
 
@@ -2155,6 +2286,8 @@ propuestas.find(
 p => p.id === id
 );
 
+if (!propuesta) return;
+
 const modal =
 document.getElementById(
 "modalPropuesta"
@@ -2162,13 +2295,12 @@ document.getElementById(
 
 modal.innerHTML = `
 
-<h2>
-
+<h2 style="
+color:#C8102E;
+margin-bottom:10px;
+">
 ${propuesta.titulo}
-
 </h2>
-
-<hr>
 
 <p><b>Tipo:</b> ${propuesta.tipo || "-"}</p>
 
@@ -2178,7 +2310,7 @@ ${propuesta.titulo}
 
 <p><b>Localidad:</b> ${propuesta.localidad || "-"}</p>
 
-<p><b>Categoría:</b> ${propuesta.categoria}</p>
+<b>${propuesta.categoria}</b>
 
 <p><b>ODS:</b> ${propuesta.ods}</p>
 
@@ -2213,6 +2345,7 @@ document.getElementById(
 modal.style.display="block";
 
 }
+
 function actualizarContador(){
 
 document.getElementById(
@@ -2223,7 +2356,7 @@ document.getElementById(
 
 propuestas.length +
 
-" Propuestas";
+"";
 
 }
 
@@ -2257,6 +2390,7 @@ map.flyTo(
 );
 
 }
+
 //===================
 // NUEVAS CIUDADES
 //===================
@@ -2288,53 +2422,10 @@ map.flyTo(
 
 }
 
-
 //===================
 // BUSCADOR SIMPLE
 //===================
 
-function buscarCiudad(){
-
-const ciudad =
-prompt(
-"Ingrese ciudad"
-);
-
-if(!ciudad) return;
-
-const encontrada =
-ciudades.find(
-
-c =>
-c[0]
-.toLowerCase()
-.includes(
-ciudad.toLowerCase()
-)
-
-);
-
-if(encontrada){
-
-map.flyTo(
-[
-encontrada[1],
-encontrada[2]
-],
-12
-);
-
-}else{
-
-alert(
-"Ciudad no encontrada"
-);
-
-}
-
-//BUSCAR CIUDAD//
-
-}
 function buscarCiudad(){
 
 const nombre =
@@ -2375,6 +2466,7 @@ alert(
 }
 
 }
+
 //===================
 // FULLSCREEN
 //===================
@@ -2455,8 +2547,30 @@ menuPanel.style.display="block";
 togglePanel.innerHTML="◀";
 
 }
+ 
 
 };
+function mostrarQR(){
+
+document.getElementById(
+"modalQR"
+).style.display =
+"block";
+
+}
+
+if(window.innerWidth < 768){
+
+const botonQR =
+document.getElementById("btnQR");
+
+if(botonQR){
+
+botonQR.style.display = "none";
+
+}
+
+}
 
 </script>
 
